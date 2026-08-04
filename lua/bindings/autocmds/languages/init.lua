@@ -1,14 +1,15 @@
-local autocmds = {}
+local autocmd = require("utils.autocmd")
+
+local M = {}
 
 local modules = {
     "java",
 }
 
-for _, module in ipairs(modules) do
-    vim.list_extend(
-        autocmds,
-        require("bindings.autocmds.languages." .. module)
-    )
+function M.setup()
+    for _, module in ipairs(modules) do
+        autocmd.module("bindings.autocmds.languages." .. module)
+    end
 end
 
-return autocmds
+return M

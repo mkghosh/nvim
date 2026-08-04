@@ -1,6 +1,6 @@
 local M = {}
 
-local command = require("core.utils.command")
+local command = require("utils.command")
 local run = require("languages.java.spring.run")
 
 local initialized = false

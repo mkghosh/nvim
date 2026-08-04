@@ -7,45 +7,9 @@ return {
     ----------------------------------------------------------------------
 
     {
-        lhs = "<leader>gs",
-        rhs = git.status,
-        desc = "Git: Status",
-    },
-
-    {
-        lhs = "<leader>gc",
-        rhs = git.commit,
-        desc = "Git: Commit",
-    },
-
-    {
-        lhs = "<leader>gP",
-        rhs = git.push,
-        desc = "Git: Push",
-    },
-
-    {
-        lhs = "<leader>gL",
-        rhs = git.pull,
-        desc = "Git: Pull (Rebase)",
-    },
-
-    {
-        lhs = "<leader>gf",
-        rhs = git.fetch,
-        desc = "Git: Fetch",
-    },
-
-    {
         lhs = "<leader>gg",
-        rhs = git.log,
-        desc = "Git: Log",
-    },
-
-    {
-        lhs = "<leader>gt",
-        rhs = git.branch,
-        desc = "Git: Branches",
+        rhs = git.open,
+        desc = "Git: Lazygit",
     },
 
     ----------------------------------------------------------------------

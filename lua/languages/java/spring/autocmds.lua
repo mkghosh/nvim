@@ -1,6 +1,6 @@
 local M = {}
 
-local autocmd = require("core.utils.autocmd")
+local autocmd = require("utils.autocmd")
 local project = require("languages.java.spring.project")
 
 local initialized = false

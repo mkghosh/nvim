@@ -1,4 +1,4 @@
-local path = require("core.utils.path")
+local path = require("utils.path")
 
 local jdtls = path.mason("packages", "jdtls")
 

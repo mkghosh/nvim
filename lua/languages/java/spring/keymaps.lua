@@ -1,6 +1,6 @@
 local M = {}
 
-local map = require("core.utils.keymap").set
+local map = require("utils.keymap").set
 local run = require("languages.java.spring.run")
 
 function M.setup(bufnr)

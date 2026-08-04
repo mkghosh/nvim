@@ -1,7 +1,7 @@
 local M = {}
 
 function M.setup()
-    require("lua.lsp.servers.jdtls.jdtls").setup()
+    require("lsp.servers.jdtls").setup()
 end
 
 return M

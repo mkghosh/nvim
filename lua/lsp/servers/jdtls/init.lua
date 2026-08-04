@@ -21,7 +21,13 @@ M.filetypes = metadata.filetypes
 M.root_markers = metadata.root_markers
 
 --------------------------------------------------------------------------------
--- Setup
+-- Private
+--------------------------------------------------------------------------------
+
+local started = {}
+
+--------------------------------------------------------------------------------
+-- API
 --------------------------------------------------------------------------------
 
 function M.setup()
@@ -30,6 +36,12 @@ function M.setup()
     if not root then
         return
     end
+
+    if started[root] then
+        return
+    end
+
+    started[root] = true
 
     --------------------------------------------------------------------------
     -- Java Runtime
@@ -44,6 +56,7 @@ function M.setup()
     --------------------------------------------------------------------------
 
     jdtls.start_or_attach({
+
         cmd = command_line.build(),
 
         root_dir = root,
@@ -55,6 +68,7 @@ function M.setup()
         init_options = {
             bundles = bundles.find(),
         },
+
     })
 end
 

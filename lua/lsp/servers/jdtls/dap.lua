@@ -15,7 +15,7 @@ function M.setup()
 
     initialized = true
 
-    require("lua.lsp.servers.jdtls.jdtls").setup_dap({
+    require("jdtls").setup_dap({
         hotcodereplace = "auto",
     })
 end

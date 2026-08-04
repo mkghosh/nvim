@@ -12,13 +12,7 @@ end
 -- Repository
 ----------------------------------------------------------------------
 
-M.status = repo.status
-M.commit = repo.commit
-M.push = repo.push
-M.pull = repo.pull
-M.fetch = repo.fetch
-M.log = repo.log
-M.branch = repo.branch
+M.open = repo.open
 
 ----------------------------------------------------------------------
 -- Navigation
