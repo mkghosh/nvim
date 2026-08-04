@@ -110,8 +110,35 @@
 ---@field on_attach? fun(client: vim.lsp.Client, bufnr: integer)
 
 --------------------------------------------------------------------------------
+-- Java
+--------------------------------------------------------------------------------
+
+---@alias JavaBuildSystem
+---| "maven"
+---| "gradle"
+
+---@class JavaToolchain
+---@field system JavaBuildSystem
+---@field executable string
+
+--------------------------------------------------------------------------------
 -- Tasks
 --------------------------------------------------------------------------------
+
+---@alias TaskSystem
+---| "go"
+---| "make"
+---| "task"
+---| "mage"
+---| "cargo"
+---| "npm"
+---| "pnpm"
+---| "bun"
+---| "maven"
+---| "gradle"
+---| "pip"
+---| "poetry"
+---| "uv"
 
 ---@class TaskDefinition
 ---@field title string
@@ -125,6 +152,9 @@
 ---@field bun? string
 ---@field maven? string
 ---@field gradle? string
+---@field pip? string
+---@field poetry? string
+---@field uv? string
 
 ---@class TaskCommand
 ---@field executable string
@@ -133,14 +163,8 @@
 ---@class TaskRunOptions : TerminalRunOptions
 ---@field command TaskCommand
 
---------------------------------------------------------------------------------
--- Java
---------------------------------------------------------------------------------
-
----@alias JavaBuildSystem
----| "maven"
----| "gradle"
-
----@class JavaToolchain
----@field system JavaBuildSystem
----@field executable string
+---@class LanguageMetadata
+---@field filetypes string[]
+---@field root_markers string[]
+---@field tools table
+---@field tasks table<string, TaskDefinition>

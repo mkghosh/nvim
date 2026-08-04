@@ -29,6 +29,8 @@ M.categories = {
         "dockerls",
         "docker_compose_language_service",
 
+        --Python
+        "basedpyright"
         -- Java
         -- jdtls is managed separately because of your custom launcher
     },
@@ -50,6 +52,8 @@ M.categories = {
 
         "goimports",
         "gofumpt",
+
+        "ruff",
     },
 
     --------------------------------------------------------------------------
@@ -81,7 +85,7 @@ M.categories = {
 
         "delve",
 
-        -- "debugpy",
+        "debugpy",
         -- "java-debug-adapter",
     },
 
