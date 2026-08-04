@@ -4,12 +4,12 @@ local M = {}
 -- Split
 --------------------------------------------------------------------------------
 
-function M.vsplit()
-    vim.cmd.vsplit()
-end
-
 function M.split()
     vim.cmd.split()
+end
+
+function M.vsplit()
+    vim.cmd.vsplit()
 end
 
 --------------------------------------------------------------------------------
@@ -45,11 +45,71 @@ function M.right()
 end
 
 --------------------------------------------------------------------------------
+-- Move Window
+--------------------------------------------------------------------------------
+
+function M.move_left()
+    vim.cmd.wincmd("H")
+end
+
+function M.move_down()
+    vim.cmd.wincmd("J")
+end
+
+function M.move_up()
+    vim.cmd.wincmd("K")
+end
+
+function M.move_right()
+    vim.cmd.wincmd("L")
+end
+
+--------------------------------------------------------------------------------
 -- Resize
 --------------------------------------------------------------------------------
 
 function M.equalize()
     vim.cmd.wincmd("=")
+end
+
+function M.increase_width()
+    vim.cmd("vertical resize +5")
+end
+
+function M.decrease_width()
+    vim.cmd("vertical resize -5")
+end
+
+function M.increase_height()
+    vim.cmd("resize +3")
+end
+
+function M.decrease_height()
+    vim.cmd("resize -3")
+end
+
+--------------------------------------------------------------------------------
+-- Rotation
+--------------------------------------------------------------------------------
+
+function M.rotate_down()
+    vim.cmd.wincmd("r")
+end
+
+function M.rotate_up()
+    vim.cmd.wincmd("R")
+end
+
+--------------------------------------------------------------------------------
+-- Misc
+--------------------------------------------------------------------------------
+
+function M.next()
+    vim.cmd.wincmd("w")
+end
+
+function M.previous()
+    vim.cmd.wincmd("W")
 end
 
 return M
