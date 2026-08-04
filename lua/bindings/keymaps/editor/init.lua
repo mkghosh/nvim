@@ -7,7 +7,7 @@ local modules = {
     "debugger",
     "navigation",
     "formatter",
-    -- "windows",
+    "window",
     -- "buffers",
     -- "finder",
     "treesitter",
