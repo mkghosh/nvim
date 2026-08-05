@@ -1,3 +1,5 @@
+local project = require("languages.python.project")
+
 local M = {}
 
 --------------------------------------------------------------------------------
@@ -15,6 +17,12 @@ M.basedpyright = {
         useLibraryCodeForTypes = true,
 
         diagnosticMode = "workspace",
+
+    },
+
+    python = {
+
+        pythonPath = project.python(),
 
     },
 
