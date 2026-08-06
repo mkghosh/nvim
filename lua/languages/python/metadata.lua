@@ -19,12 +19,14 @@ M.root_markers = {
 }
 
 --------------------------------------------------------------------------------
--- Tools
+-- Toolchain
 --------------------------------------------------------------------------------
 
 M.tools = {
 
     lsp = "basedpyright",
+
+    dap = "debugpy",
 
     formatter = {
         "ruff",
@@ -33,12 +35,6 @@ M.tools = {
     linter = {
         "ruff",
     },
-
-    debugger = "debugpy",
-
-    test = "pytest",
-
-    notebook = "jupyter",
 }
 
 --------------------------------------------------------------------------------
@@ -49,7 +45,7 @@ M.tasks = {
 
     run = {
 
-        title = "Run",
+        title = "Python: Run",
 
         uv = "run main.py",
 
@@ -60,7 +56,7 @@ M.tasks = {
 
     test = {
 
-        title = "Test",
+        title = "Python: Test",
 
         uv = "run pytest",
 

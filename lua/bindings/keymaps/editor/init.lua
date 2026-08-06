@@ -8,7 +8,7 @@ local modules = {
     "navigation",
     "formatter",
     "window",
-    -- "buffers",
+    "tab",
     -- "finder",
     "treesitter",
 }
