@@ -34,6 +34,13 @@
 ---@field layout? "float"|"bottom"|"right"
 ---@field auto_insert? boolean
 
+---@class TerminalTaskOptions
+---@field cwd? string
+---@field env? table<string, string>
+---@field title? string
+---@field id? string
+---@field auto_insert? boolean
+
 --------------------------------------------------------------------------------
 -- Commands
 --------------------------------------------------------------------------------

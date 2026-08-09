@@ -46,7 +46,7 @@ end
 --------------------------------------------------------------------------------
 
 ---@param cmd string
----@param opts? TerminalRunOptions
+---@param opts? TerminalTaskOptions
 function M.task(cmd, opts)
     opts = vim.tbl_extend("force", {
         cmd = cmd,
@@ -57,7 +57,7 @@ function M.task(cmd, opts)
 end
 
 ---@param cmd string
----@param opts? TerminalRunOptions
+---@param opts? TerminalTaskOptions
 function M.float(cmd, opts)
     opts = vim.tbl_extend("force", {
         cmd = cmd,
@@ -68,7 +68,7 @@ function M.float(cmd, opts)
 end
 
 ---@param cmd string
----@param opts? TerminalRunOptions
+---@param opts? TerminalTaskOptions
 function M.side(cmd, opts)
     opts = vim.tbl_extend("force", {
         cmd = cmd,

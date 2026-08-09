@@ -66,8 +66,6 @@ M.categories = {
 
         "shellcheck",
 
-        "ruff",
-
         "yamllint",
 
         "markdownlint-cli2",

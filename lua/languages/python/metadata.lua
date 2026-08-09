@@ -43,17 +43,6 @@ M.tools = {
 
 M.tasks = {
 
-    run = {
-
-        title = "Python: Run",
-
-        uv = "run main.py",
-
-        poetry = "run python main.py",
-
-        pip = "main.py",
-    },
-
     test = {
 
         title = "Python: Test",

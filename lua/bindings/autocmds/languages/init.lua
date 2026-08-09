@@ -4,6 +4,7 @@ local M = {}
 
 local modules = {
     "java",
+    "python",
 }
 
 function M.setup()
