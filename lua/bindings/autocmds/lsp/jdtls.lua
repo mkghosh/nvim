@@ -56,6 +56,10 @@ return {
     -- Project Configuration
     ----------------------------------------------------------------------------
 
+    ----------------------------------------------------------------------------
+    -- Project Configuration
+    ----------------------------------------------------------------------------
+
     {
         event = "BufWritePost",
 
@@ -68,6 +72,14 @@ return {
         },
 
         callback = function()
+            local clients = vim.lsp.get_clients({
+                name = "jdtls",
+            })
+
+            if #clients == 0 then
+                return
+            end
+
             jdtls.update_project_config()
         end,
 
