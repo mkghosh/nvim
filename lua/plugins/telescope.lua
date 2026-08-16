@@ -1,5 +1,4 @@
 local keymap = require("utils.keymap")
-local actions = require("telescope.actions")
 
 return {
     {
@@ -16,21 +15,25 @@ return {
             },
         },
 
-        opts = {
-            defaults = {
-                sorting_strategy = "ascending",
+        opts = function()
+            local actions = require("telescope.actions")
 
-                layout_config = {
-                    prompt_position = "top",
-                },
+            return {
+                defaults = {
+                    sorting_strategy = "ascending",
 
-                mappings = {
-                    i = {
-                        ["<C-j>"] = actions.move_selection_next,
-                        ["<C-k>"] = actions.move_selection_previous,
+                    layout_config = {
+                        prompt_position = "top",
+                    },
+
+                    mappings = {
+                        i = {
+                            ["<C-j>"] = actions.move_selection_next,
+                            ["<C-k>"] = actions.move_selection_previous,
+                        },
                     },
                 },
-            },
-        },
+            }
+        end,
     },
 }
