@@ -12,17 +12,23 @@ local function glob(pattern)
     )
 end
 
+--------------------------------------------------------------------------------
+-- Bundles
+--------------------------------------------------------------------------------
+
 function M.find()
     local bundles = {}
 
-    vim.list_extend(
-        bundles,
-        glob(mason .. "/java-debug-adapter/extension/server/*.jar")
-    )
+    --------------------------------------------------------------------------
+    -- Java Debug Adapter
+    --------------------------------------------------------------------------
 
     vim.list_extend(
         bundles,
-        glob(mason .. "/java-test/extension/server/*.jar")
+        glob(
+            mason
+            .. "/java-debug-adapter/extension/server/*.jar"
+        )
     )
 
     return bundles

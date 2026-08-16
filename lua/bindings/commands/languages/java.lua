@@ -39,6 +39,14 @@ local commands = {
         desc = "Check Java Toolchain",
     },
 
+    {
+        name = "JdtUpdate",
+        callback = "JdtUpdateConfig",
+        desc = "Update JDTLS project configuration",
+    },
+
+
+
     --------------------------------------------------------------------------
     -- Refactoring
     --------------------------------------------------------------------------

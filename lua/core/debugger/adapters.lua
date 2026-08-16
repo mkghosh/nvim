@@ -6,16 +6,17 @@ local M = {}
 -- Python
 --------------------------------------------------------------------------------
 
-local function setup_python()
-    local command = vim.fn.exepath("debugpy-adapter")
+function M.setup_python()
+    local command = vim.fn.stdpath("data")
+        .. "/mason/bin/debugpy-adapter"
 
-    if command == "" then
+    if vim.fn.executable(command) ~= 1 then
         vim.notify(
-            "debugpy-adapter not found",
+            "debugpy-adapter not found: " .. command,
             vim.log.levels.WARN
         )
 
-        return
+        return false
     end
 
     dap.adapters.python = {
@@ -23,6 +24,8 @@ local function setup_python()
         command = command,
         args = {},
     }
+
+    return true
 end
 
 --------------------------------------------------------------------------------
@@ -30,7 +33,7 @@ end
 --------------------------------------------------------------------------------
 
 function M.setup()
-    setup_python()
+    -- Generic DAP setup only.
 end
 
 return M
