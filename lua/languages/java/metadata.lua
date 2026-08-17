@@ -63,11 +63,13 @@ M.build = {
     maven = {
         wrapper = "mvnw",
         executable = "mvn",
+        prefer_wrapper = false,
     },
 
     gradle = {
         wrapper = "gradlew",
         executable = "gradle",
+        prefer_wrapper = false,
     },
 
 }

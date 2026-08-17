@@ -164,6 +164,8 @@
 ---@field pip? string
 ---@field poetry? string
 ---@field uv? string
+---@field system? string
+---@field executable? string
 
 ---@class TaskCommand
 ---@field executable string

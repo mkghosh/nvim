@@ -60,7 +60,7 @@ function M.system()
 end
 
 ---@return string?
-function M.wrapper()
+function M.executable()
     local root = M.root()
 
     if not root then
@@ -74,11 +74,12 @@ function M.wrapper()
     end
 
     local build = metadata.build[system]
+    if build.prefer_wrapper then
+        local wrapper = vim.fs.joinpath(root, build.wrapper)
 
-    local wrapper = vim.fs.joinpath(root, build.wrapper)
-
-    if exists(wrapper) then
-        return "./" .. build.wrapper
+        if exists(wrapper) then
+            return "./" .. build.wrapper
+        end
     end
 
     return build.executable
@@ -96,7 +97,7 @@ function M.toolchain()
         return nil
     end
 
-    local executable = M.wrapper()
+    local executable = M.executable()
 
     if not executable then
         return nil
@@ -129,11 +130,9 @@ function M.task(task)
 
     return {
         title = task.title,
-
-        [toolchain.system] = ("%s %s"):format(
-            toolchain.executable,
-            arguments
-        ),
+        executable = toolchain.executable,
+        system = toolchain.system,
+        [toolchain.system] = arguments,
     }
 end
 

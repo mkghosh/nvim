@@ -25,14 +25,21 @@ end
 --------------------------------------------------------------------------------
 
 ---@param root string
----@param task table
----@param opts? TerminalRunOptions
+---@param task TaskDefinition
+---@param opts? TerminalTaskOptions
 function M.run(root, task, opts)
-    local system = strategy.detect(root)
+    --------------------------------------------------------------------------
+    -- Build System
+    --------------------------------------------------------------------------
 
-    local executable = strategy.executable(system)
+    local system = task.system or strategy.detect(root)
 
-    local arguments = task[system]
+    --------------------------------------------------------------------------
+    -- Executable
+    --------------------------------------------------------------------------
+
+    local executable = task.executable
+        or strategy.executable(system)
 
     if not executable then
         vim.notify(
@@ -42,6 +49,12 @@ function M.run(root, task, opts)
         return
     end
 
+    --------------------------------------------------------------------------
+    -- Arguments
+    --------------------------------------------------------------------------
+
+    local arguments = task[system]
+
     if not arguments then
         vim.notify(
             ("No '%s' task defined."):format(system),
@@ -49,6 +62,10 @@ function M.run(root, task, opts)
         )
         return
     end
+
+    --------------------------------------------------------------------------
+    -- Command
+    --------------------------------------------------------------------------
 
     opts = vim.tbl_extend("force", {
 
@@ -60,11 +77,18 @@ function M.run(root, task, opts)
 
             executable = executable,
 
-            arguments = vim.split(arguments, "%s+"),
+            arguments = vim.split(
+                arguments,
+                "%s+"
+            ),
 
         },
 
     }, opts or {})
+
+    --------------------------------------------------------------------------
+    -- Terminal
+    --------------------------------------------------------------------------
 
     terminal.task(
         build(opts.command),
