@@ -25,6 +25,7 @@ function M.run(opts)
         title = opts.title,
         id = opts.id,
         auto_insert = opts.auto_insert,
+        auto_close = opts.auto_close,
     })
 
     local term = terminal().open(opts.cmd, layout)
@@ -51,6 +52,7 @@ function M.task(cmd, opts)
     opts = vim.tbl_extend("force", {
         cmd = cmd,
         layout = "bottom",
+        auto_close = false,
     }, opts or {})
 
     return M.run(opts)

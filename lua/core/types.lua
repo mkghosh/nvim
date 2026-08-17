@@ -33,6 +33,7 @@
 ---@field id? string
 ---@field layout? "float"|"bottom"|"right"
 ---@field auto_insert? boolean
+---@field auto_close? boolean
 
 ---@class TerminalTaskOptions
 ---@field cwd? string
@@ -40,6 +41,7 @@
 ---@field title? string
 ---@field id? string
 ---@field auto_insert? boolean
+---@field auto_close? boolean
 
 --------------------------------------------------------------------------------
 -- Commands
