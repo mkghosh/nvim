@@ -101,6 +101,13 @@ M.tasks = {
         gradle = "publishToMavenLocal",
     },
 
+    deploy = {
+        title = "Java: Deploy",
+
+        maven = "clean deploy",
+        gradle = "publish",
+    },
+
     test = {
         title = "Java: Test",
 

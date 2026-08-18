@@ -28,6 +28,12 @@ local commands = {
     },
 
     {
+        name = "JavaDeploy",
+        callback = actions.deploy,
+        desc = "Deploy Java Project",
+    },
+
+    {
         name = "JavaTest",
         callback = actions.test,
         desc = "Run Project Tests",

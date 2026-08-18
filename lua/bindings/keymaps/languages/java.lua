@@ -55,6 +55,13 @@ local mappings = {
 
     map(
         "n",
+        "<leader>jpd",
+        actions.deploy,
+        "Deploy Project"
+    ),
+
+    map(
+        "n",
         "<leader>jpt",
         actions.test,
         "Run Tests"

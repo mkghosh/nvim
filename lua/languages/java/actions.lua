@@ -52,6 +52,10 @@ function M.install()
     run(metadata.tasks.install)
 end
 
+function M.deploy()
+    run(metadata.tasks.deploy)
+end
+
 function M.test()
     run(metadata.tasks.test)
 end
