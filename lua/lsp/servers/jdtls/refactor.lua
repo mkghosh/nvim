@@ -132,27 +132,6 @@ local function move_file_command(
         return
     end
 
-    local function is_valid_java_package(package_name)
-        if not package_name or package_name == "" then
-            return false
-        end
-
-        -- Package must not start or end with '.'
-        if package_name:sub(1, 1) == "."
-            or package_name:sub(-1) == "."
-        then
-            return false
-        end
-
-        -- Validate every package component independently.
-        for part in package_name:gmatch("[^.]+") do
-            if not part:match("^[%a_][%w_]*$") then
-                return false
-            end
-        end
-
-        return true
-    end
     ------------------------------------------------------------------
     -- This is intentionally vim.NIL.
     --
@@ -656,6 +635,28 @@ local function get_move_file_command(
         end,
         bufnr
     )
+end
+
+local function is_valid_java_package(package_name)
+    if not package_name or package_name == "" then
+        return false
+    end
+
+    -- Package must not start or end with '.'
+    if package_name:sub(1, 1) == "."
+        or package_name:sub(-1) == "."
+    then
+        return false
+    end
+
+    -- Validate every package component independently.
+    for part in package_name:gmatch("[^.]+") do
+        if not part:match("^[%a_][%w_]*$") then
+            return false
+        end
+    end
+
+    return true
 end
 
 
