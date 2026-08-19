@@ -63,6 +63,18 @@ local commands = {
         desc = "Organize Imports",
     },
 
+    {
+        name = "JavaMoveFile",
+        callback = refactor.move_file,
+        desc = "Move Current Java File",
+    },
+
+    {
+        name = "JavaMovePackage",
+        callback = refactor.move_package,
+        desc = "Move/Rename Java Package",
+    },
+
     --------------------------------------------------------------------------
     -- Tests
     --------------------------------------------------------------------------

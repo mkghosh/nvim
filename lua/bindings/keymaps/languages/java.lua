@@ -84,6 +84,19 @@ local mappings = {
         refactor.organize_imports,
         "Organize Imports"
     ),
+    map(
+        "n",
+        "<leader>jmf",
+        refactor.move_file,
+        "Java Move File"
+    ),
+
+    map(
+        "n",
+        "<leader>jmp",
+        refactor.move_package,
+        "Java Rename/Move Package"
+    ),
 
     map(
         "n",
