@@ -1,4 +1,4 @@
-local runtimes = require("lsp.servers.jdtls.runtimes")
+local runtime_manager = require("lsp.servers.jdtls.runtimes")
 
 local M = {}
 
@@ -15,7 +15,7 @@ function M.build()
 
                 updateBuildConfiguration = "interactive",
 
-                runtimes = runtimes,
+                runtimes = runtime_manager.get(),
 
             },
 

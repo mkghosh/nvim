@@ -130,6 +130,16 @@
 ---@field system JavaBuildSystem
 ---@field executable string
 
+---@class JavaRuntime
+---@field name string
+---@field path string
+---@field default? boolean
+
+---@class JavaProjectRuntime
+---@field version integer
+---@field source string
+---@field path? string
+
 --------------------------------------------------------------------------------
 -- Tasks
 --------------------------------------------------------------------------------
