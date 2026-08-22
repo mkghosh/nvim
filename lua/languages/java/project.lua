@@ -12,7 +12,9 @@ local uv = vim.uv
 ---@param path string
 ---@return boolean
 local function exists(path)
-    return uv.fs_stat(path) ~= nil
+    local stat = uv.fs_stat(path)
+
+    return stat ~= nil
 end
 
 ---@param path string
@@ -25,7 +27,6 @@ local function read(path)
     end
 
     local content = fd:read("*a")
-
     fd:close()
 
     return content
@@ -41,13 +42,17 @@ local function normalize_java_version(value)
     value = vim.trim(value)
 
     --------------------------------------------------------------------------
-    -- ${java.version}
+    -- Maven property references are resolved separately.
     --------------------------------------------------------------------------
 
-    value = value:gsub("^%${[^}]+}$", "")
+    if value:match("^%${[^}]+}$") then
+        return nil
+    end
 
     --------------------------------------------------------------------------
-    -- 1.8 → 8
+    -- Java 8 style:
+    --
+    -- 1.8 -> 8
     --------------------------------------------------------------------------
 
     local old = value:match("^1%.(%d+)$")
@@ -57,7 +62,14 @@ local function normalize_java_version(value)
     end
 
     --------------------------------------------------------------------------
-    -- 21, 21.0.1, 21-ea, etc.
+    -- Modern Java:
+    --
+    -- 8
+    -- 11
+    -- 17
+    -- 21
+    -- 21.0.1
+    -- 21-ea
     --------------------------------------------------------------------------
 
     local major = value:match("^(%d+)")
@@ -78,10 +90,6 @@ end
 -- Build system
 --------------------------------------------------------------------------------
 
---------------------------------------------------------------------------------
--- Build system
---------------------------------------------------------------------------------
-
 ---@return boolean
 function M.is_maven()
     local root = M.root()
@@ -90,7 +98,9 @@ function M.is_maven()
         return false
     end
 
-    return exists(vim.fs.joinpath(root, "pom.xml"))
+    return exists(
+        vim.fs.joinpath(root, "pom.xml")
+    )
 end
 
 ---@return boolean
@@ -101,8 +111,12 @@ function M.is_gradle()
         return false
     end
 
-    return exists(vim.fs.joinpath(root, "build.gradle"))
-        or exists(vim.fs.joinpath(root, "build.gradle.kts"))
+    return exists(
+            vim.fs.joinpath(root, "build.gradle")
+        )
+        or exists(
+            vim.fs.joinpath(root, "build.gradle.kts")
+        )
 end
 
 ---@return boolean
@@ -125,12 +139,18 @@ function M.system()
         return nil
     end
 
-    if exists(vim.fs.joinpath(root, "pom.xml")) then
+    if exists(
+            vim.fs.joinpath(root, "pom.xml")
+        ) then
         return "maven"
     end
 
-    if exists(vim.fs.joinpath(root, "build.gradle"))
-        or exists(vim.fs.joinpath(root, "build.gradle.kts"))
+    if exists(
+            vim.fs.joinpath(root, "build.gradle")
+        )
+        or exists(
+            vim.fs.joinpath(root, "build.gradle.kts")
+        )
     then
         return "gradle"
     end
@@ -160,7 +180,10 @@ function M.executable()
 
     if build.prefer_wrapper then
         local wrapper =
-            vim.fs.joinpath(root, build.wrapper)
+            vim.fs.joinpath(
+                root,
+                build.wrapper
+            )
 
         if exists(wrapper) then
             return "./" .. build.wrapper
@@ -195,26 +218,185 @@ function M.toolchain()
 end
 
 --------------------------------------------------------------------------------
+-- Maven property extraction
+--------------------------------------------------------------------------------
+
+---@param pom string
+---@return table<string, string>
+local function maven_properties(pom)
+    local properties = {}
+
+    --------------------------------------------------------------------------
+    -- <properties>...</properties>
+    --------------------------------------------------------------------------
+
+    local block =
+        pom:match(
+            "<properties>(.-)</properties>"
+        )
+
+    if not block then
+        return properties
+    end
+
+    --------------------------------------------------------------------------
+    -- Extract simple XML properties.
+    --
+    -- Example:
+    --
+    -- <java.version>21</java.version>
+    -- <maven.compiler.source>${java.version}</maven.compiler.source>
+    --------------------------------------------------------------------------
+
+    for name, value in block:gmatch(
+        "<([%w_.%-]+)>%s*([^<]-)%s*</%1>"
+    ) do
+        properties[name] = vim.trim(value)
+    end
+
+    return properties
+end
+
+--------------------------------------------------------------------------------
+-- Maven property resolution
+--------------------------------------------------------------------------------
+
+---@param value string?
+---@param properties table<string, string>
+---@param resolving? table<string, boolean>
+---@param depth? integer
+---@return string?
+local function resolve_maven_value(
+    value,
+    properties,
+    resolving,
+    depth
+)
+    if not value then
+        return nil
+    end
+
+    value = vim.trim(value)
+
+    resolving = resolving or {}
+    depth = depth or 0
+
+    --------------------------------------------------------------------------
+    -- Protect against circular references.
+    --------------------------------------------------------------------------
+
+    if depth > 20 then
+        return nil
+    end
+
+    --------------------------------------------------------------------------
+    -- Plain value.
+    --------------------------------------------------------------------------
+
+    if not value:find("%${", 1, true) then
+        return value
+    end
+
+    --------------------------------------------------------------------------
+    -- Resolve ${property}.
+    --------------------------------------------------------------------------
+
+    local resolved = value:gsub(
+        "%${([^}]+)}",
+        function(name)
+            if resolving[name] then
+                return ""
+            end
+
+            local replacement = properties[name]
+
+            if not replacement then
+                return ""
+            end
+
+            resolving[name] = true
+
+            local result =
+                resolve_maven_value(
+                    replacement,
+                    properties,
+                    resolving,
+                    depth + 1
+                )
+
+            resolving[name] = nil
+
+            return result or ""
+        end
+    )
+
+    if resolved == "" then
+        return nil
+    end
+
+    return vim.trim(resolved)
+end
+
+--------------------------------------------------------------------------------
+-- Maven value lookup
+--------------------------------------------------------------------------------
+
+---@param pom string
+---@param properties table<string, string>
+---@param tag string
+---@return string?
+local function maven_value(
+    pom,
+    properties,
+    tag
+)
+    local value =
+        pom:match(
+            "<"
+            .. tag
+            .. ">%s*([^<]+)%s*</"
+            .. tag
+            .. ">"
+        )
+
+    if not value then
+        return nil
+    end
+
+    return resolve_maven_value(
+        value,
+        properties
+    )
+end
+
+--------------------------------------------------------------------------------
 -- Maven Java version
 --------------------------------------------------------------------------------
 
 ---@param pom string
 ---@return integer?, string?
 local function maven_java_version(pom)
+    local properties =
+        maven_properties(pom)
+
     --------------------------------------------------------------------------
-    -- Explicit java.version property
+    -- java.version
     --------------------------------------------------------------------------
 
     local value =
-        pom:match(
-            "<java%.version>%s*([^<]+)%s*</java%.version>"
+        maven_value(
+            pom,
+            properties,
+            "java.version"
         )
 
     if value then
-        local version = normalize_java_version(value)
+        local version =
+            normalize_java_version(value)
 
         if version then
-            return version, "maven.java.version"
+            return version,
+                "maven.java.version"
         end
     end
 
@@ -223,15 +405,19 @@ local function maven_java_version(pom)
     --------------------------------------------------------------------------
 
     value =
-        pom:match(
-            "<maven%.compiler%.release>%s*([^<]+)%s*</maven%.compiler%.release>"
+        maven_value(
+            pom,
+            properties,
+            "maven.compiler.release"
         )
 
     if value then
-        local version = normalize_java_version(value)
+        local version =
+            normalize_java_version(value)
 
         if version then
-            return version, "maven.compiler.release"
+            return version,
+                "maven.compiler.release"
         end
     end
 
@@ -240,15 +426,19 @@ local function maven_java_version(pom)
     --------------------------------------------------------------------------
 
     value =
-        pom:match(
-            "<maven%.compiler%.source>%s*([^<]+)%s*</maven%.compiler%.source>"
+        maven_value(
+            pom,
+            properties,
+            "maven.compiler.source"
         )
 
     if value then
-        local version = normalize_java_version(value)
+        local version =
+            normalize_java_version(value)
 
         if version then
-            return version, "maven.compiler.source"
+            return version,
+                "maven.compiler.source"
         end
     end
 
@@ -257,15 +447,19 @@ local function maven_java_version(pom)
     --------------------------------------------------------------------------
 
     value =
-        pom:match(
-            "<maven%.compiler%.target>%s*([^<]+)%s*</maven%.compiler%.target>"
+        maven_value(
+            pom,
+            properties,
+            "maven.compiler.target"
         )
 
     if value then
-        local version = normalize_java_version(value)
+        local version =
+            normalize_java_version(value)
 
         if version then
-            return version, "maven.compiler.target"
+            return version,
+                "maven.compiler.target"
         end
     end
 
@@ -280,18 +474,21 @@ end
 ---@return integer?, string?
 local function gradle_java_version(gradle)
     --------------------------------------------------------------------------
-    -- Java toolchain
+    -- Gradle Java toolchain
     --
     -- languageVersion = JavaLanguageVersion.of(21)
     --------------------------------------------------------------------------
 
     local value =
         gradle:match(
-            "languageVersion%s*=%s*JavaLanguageVersion%.of%s*%(%s*(%d+)%s*%)"
+            "languageVersion%s*=%s*"
+            .. "JavaLanguageVersion%.of%s*"
+            .. "%(%s*(%d+)%s*%)"
         )
 
     if value then
-        return tonumber(value), "gradle.toolchain"
+        return tonumber(value),
+            "gradle.toolchain"
     end
 
     --------------------------------------------------------------------------
@@ -302,11 +499,14 @@ local function gradle_java_version(gradle)
 
     value =
         gradle:match(
-            "languageVersion%.set%s*%(%s*JavaLanguageVersion%.of%s*%(%s*(%d+)%s*%)"
+            "languageVersion%.set%s*"
+            .. "%(%s*JavaLanguageVersion%.of%s*"
+            .. "%(%s*(%d+)%s*%)"
         )
 
     if value then
-        return tonumber(value), "gradle.toolchain"
+        return tonumber(value),
+            "gradle.toolchain"
     end
 
     --------------------------------------------------------------------------
@@ -319,7 +519,8 @@ local function gradle_java_version(gradle)
         )
 
     if value then
-        return tonumber(value), "gradle.sourceCompatibility"
+        return tonumber(value),
+            "gradle.sourceCompatibility"
     end
 
     --------------------------------------------------------------------------
@@ -332,7 +533,8 @@ local function gradle_java_version(gradle)
         )
 
     if value then
-        return tonumber(value), "gradle.targetCompatibility"
+        return tonumber(value),
+            "gradle.targetCompatibility"
     end
 
     --------------------------------------------------------------------------
@@ -341,20 +543,24 @@ local function gradle_java_version(gradle)
 
     value =
         gradle:match(
-            "sourceCompatibility%s*=%s*JavaVersion%.VERSION_(%d+)"
+            "sourceCompatibility%s*=%s*"
+            .. "JavaVersion%.VERSION_(%d+)"
         )
 
     if value then
-        return tonumber(value), "gradle.sourceCompatibility"
+        return tonumber(value),
+            "gradle.sourceCompatibility"
     end
 
     value =
         gradle:match(
-            "targetCompatibility%s*=%s*JavaVersion%.VERSION_(%d+)"
+            "targetCompatibility%s*=%s*"
+            .. "JavaVersion%.VERSION_(%d+)"
         )
 
     if value then
-        return tonumber(value), "gradle.targetCompatibility"
+        return tonumber(value),
+            "gradle.targetCompatibility"
     end
 
     return nil
@@ -378,7 +584,12 @@ function M.java_version()
 
     if M.is_maven() then
         local pom =
-            read(vim.fs.joinpath(root, "pom.xml"))
+            read(
+                vim.fs.joinpath(
+                    root,
+                    "pom.xml"
+                )
+            )
 
         if pom then
             local version, source =
@@ -396,8 +607,18 @@ function M.java_version()
 
     if M.is_gradle() then
         local gradle =
-            read(vim.fs.joinpath(root, "build.gradle"))
-            or read(vim.fs.joinpath(root, "build.gradle.kts"))
+            read(
+                vim.fs.joinpath(
+                    root,
+                    "build.gradle"
+                )
+            )
+            or read(
+                vim.fs.joinpath(
+                    root,
+                    "build.gradle.kts"
+                )
+            )
 
         if gradle then
             local version, source =
@@ -410,19 +631,8 @@ function M.java_version()
     end
 
     --------------------------------------------------------------------------
-    -- No explicit project version.
+    -- No explicit project Java version.
     --------------------------------------------------------------------------
-
-    local runtime = runtimes.default()
-
-    if runtime then
-        local version =
-            normalize_java_version(
-                runtime.name:gsub("JavaSE%-", "")
-            )
-
-        return version, "default"
-    end
 
     return nil, nil
 end
@@ -433,7 +643,8 @@ end
 
 ---@return string?
 function M.java_version_source()
-    local _, source = M.java_version()
+    local _, source =
+        M.java_version()
 
     return source
 end
@@ -447,22 +658,53 @@ function M.java_runtime()
     local required, source =
         M.java_version()
 
+    --------------------------------------------------------------------------
+    -- No declared version.
+    --------------------------------------------------------------------------
+
     if not required then
-        return nil, "Unable to determine project Java version."
+        return nil, nil
     end
 
-    local runtime, error_message =
-        runtimes.require(required)
+    --------------------------------------------------------------------------
+    -- Exact project JDK.
+    --------------------------------------------------------------------------
+
+    local runtime =
+        runtimes.exact(required)
 
     if runtime then
         return runtime, nil
     end
 
+    --------------------------------------------------------------------------
+    -- Missing project JDK.
+    --------------------------------------------------------------------------
+
+    local installed_runtimes =
+        runtimes.get()
+
+    local installed =
+        table.concat(
+            vim.tbl_map(
+                function(item)
+                    return item.name
+                end,
+                installed_runtimes
+            ),
+            ", "
+        )
+
+    if installed == "" then
+        installed = "none"
+    end
+
     return nil, string.format(
-        "Project requires Java %d (%s), but no compatible JDK is installed. %s",
+        "Project requires Java %d (%s), but Java %d is not installed. Installed JDKs: %s",
         required,
         source or "unknown",
-        error_message or ""
+        required,
+        installed
     )
 end
 
@@ -473,7 +715,8 @@ end
 ---@param task TaskDefinition
 ---@return TaskDefinition?
 function M.task(task)
-    local toolchain = M.toolchain()
+    local toolchain =
+        M.toolchain()
 
     if not toolchain then
         return nil
