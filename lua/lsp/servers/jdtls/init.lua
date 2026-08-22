@@ -1,6 +1,7 @@
 ---@diagnostic disable: undefined-field
 
-local jdtls = require("jdtls")
+local jdtls =
+    require("jdtls")
 
 local bundles =
     require("lsp.servers.jdtls.bundles")
@@ -48,24 +49,16 @@ function M.setup()
     end
 
     --------------------------------------------------------------------------
-    -- Validate JDTLS JVM
+    -- Select JDTLS JVM
     --------------------------------------------------------------------------
 
-    if not runtimes.validate_jdtls() then
-        return
-    end
+    local jdtls_runtime, jdtls_error =
+        runtimes.jdtls()
 
-    --------------------------------------------------------------------------
-    -- Resolve project runtime
-    --------------------------------------------------------------------------
-
-    local runtime, runtime_error =
-        project.java_runtime()
-
-    if not runtime then
+    if not jdtls_runtime then
         vim.notify(
-            runtime_error
-            or "Unable to resolve project Java runtime.",
+            jdtls_error
+            or "Unable to find a compatible JDK for JDTLS.",
             vim.log.levels.ERROR
         )
 
@@ -73,7 +66,24 @@ function M.setup()
     end
 
     --------------------------------------------------------------------------
-    -- Java Runtime
+    -- Resolve project runtime
+    --
+    -- This is independent from the JDTLS runtime.
+    --------------------------------------------------------------------------
+
+    local project_runtime, project_runtime_error =
+        project.java_runtime()
+
+    if not project_runtime then
+        vim.notify(
+            project_runtime_error
+            or "Project Java runtime could not be resolved.",
+            vim.log.levels.WARN
+        )
+    end
+
+    --------------------------------------------------------------------------
+    -- Java tooling
     --------------------------------------------------------------------------
 
     dap.setup()
@@ -81,12 +91,13 @@ function M.setup()
     spring.setup()
 
     --------------------------------------------------------------------------
-    -- JDTLS
+    -- Start JDTLS
     --------------------------------------------------------------------------
 
     jdtls.start_or_attach({
 
-        cmd = command_line.build(),
+        cmd =
+            command_line.build(jdtls_runtime),
 
         root_dir = root,
 
@@ -97,24 +108,49 @@ function M.setup()
             settings.build(),
 
         init_options = {
-
             bundles = bundles.find(),
-
         },
 
     })
 
-    vim.notify(
-        string.format(
-            "Java project: %s | Java %d | %s",
-            vim.fn.fnamemodify(root, ":t"),
+    --------------------------------------------------------------------------
+    -- Runtime information
+    --------------------------------------------------------------------------
+
+    local jdtls_version =
+        tonumber(
+            jdtls_runtime.name:match(
+                "JavaSE%-(%d+)"
+            )
+        )
+
+    if project_runtime then
+        local project_version =
             tonumber(
-                runtime.name:match("JavaSE%-(%d+)")
+                project_runtime.name:match(
+                    "JavaSE%-(%d+)"
+                )
+            )
+
+        vim.notify(
+            string.format(
+                "Java project: %s | Project JDK: %d | JDTLS JDK: %d",
+                vim.fn.fnamemodify(root, ":t"),
+                project_version,
+                jdtls_version
             ),
-            runtime.path
-        ),
-        vim.log.levels.INFO
-    )
+            vim.log.levels.INFO
+        )
+    else
+        vim.notify(
+            string.format(
+                "Java project: %s | Project JDK: unavailable | JDTLS JDK: %d",
+                vim.fn.fnamemodify(root, ":t"),
+                jdtls_version
+            ),
+            vim.log.levels.WARN
+        )
+    end
 end
 
 return M

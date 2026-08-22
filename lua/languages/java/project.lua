@@ -78,43 +78,60 @@ end
 -- Build system
 --------------------------------------------------------------------------------
 
+--------------------------------------------------------------------------------
+-- Build system
+--------------------------------------------------------------------------------
+
 ---@return boolean
 function M.is_maven()
     local root = M.root()
 
-    return root ~= nil
-        and exists(vim.fs.joinpath(root, "pom.xml"))
+    if not root then
+        return false
+    end
+
+    return exists(vim.fs.joinpath(root, "pom.xml"))
 end
 
 ---@return boolean
 function M.is_gradle()
     local root = M.root()
 
-    return root ~= nil
-        and (
-            exists(vim.fs.joinpath(root, "build.gradle"))
-            or exists(vim.fs.joinpath(root, "build.gradle.kts"))
-        )
+    if not root then
+        return false
+    end
+
+    return exists(vim.fs.joinpath(root, "build.gradle"))
+        or exists(vim.fs.joinpath(root, "build.gradle.kts"))
 end
 
 ---@return boolean
 function M.is_plain_java()
-    return M.root() ~= nil
-        and not M.is_maven()
+    local root = M.root()
+
+    if not root then
+        return false
+    end
+
+    return not M.is_maven()
         and not M.is_gradle()
 end
 
---------------------------------------------------------------------------------
--- Build system
---------------------------------------------------------------------------------
-
 ---@return JavaBuildSystem?
 function M.system()
-    if M.is_maven() then
+    local root = M.root()
+
+    if not root then
+        return nil
+    end
+
+    if exists(vim.fs.joinpath(root, "pom.xml")) then
         return "maven"
     end
 
-    if M.is_gradle() then
+    if exists(vim.fs.joinpath(root, "build.gradle"))
+        or exists(vim.fs.joinpath(root, "build.gradle.kts"))
+    then
         return "gradle"
     end
 

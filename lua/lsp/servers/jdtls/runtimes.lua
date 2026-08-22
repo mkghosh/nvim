@@ -52,13 +52,22 @@ local function version(path)
         "-version",
     })
 
-    local major = output:match('version%s+"(%d+)')
+    local major =
+        output:match('version%s+"(%d+)')
 
     if not major then
         return nil
     end
 
     return tonumber(major)
+end
+
+---@param runtime JavaRuntime
+---@return integer?
+local function runtime_version(runtime)
+    return tonumber(
+        runtime.name:match("JavaSE%-(%d+)")
+    )
 end
 
 --------------------------------------------------------------------------------
@@ -104,15 +113,20 @@ function M.discover()
     for _, base in ipairs(SEARCH_PATHS) do
         if is_directory(base) then
             for _, entry in ipairs(vim.fn.readdir(base)) do
-                local candidate = vim.fs.joinpath(base, entry)
+                local candidate =
+                    vim.fs.joinpath(base, entry)
 
-                if is_directory(candidate) and is_jdk(candidate) then
+                if is_directory(candidate)
+                    and is_jdk(candidate)
+                then
                     local real = realpath(candidate)
 
                     if not seen[real] then
                         local major = version(real)
 
-                        if major and major >= M.MINIMUM_JDTLS_JAVA then
+                        if major
+                            and major >= M.MINIMUM_JDTLS_JAVA
+                        then
                             table.insert(runtimes, {
                                 name = "JavaSE-" .. major,
                                 path = real,
@@ -138,8 +152,8 @@ function M.get()
     local runtimes = M.discover()
 
     table.sort(runtimes, function(a, b)
-        local av = tonumber(a.name:match("JavaSE%-(%d+)")) or 0
-        local bv = tonumber(b.name:match("JavaSE%-(%d+)")) or 0
+        local av = runtime_version(a) or 0
+        local bv = runtime_version(b) or 0
 
         if av == bv then
             return a.path < b.path
@@ -149,7 +163,7 @@ function M.get()
     end)
 
     --------------------------------------------------------------------------
-    -- Newest runtime becomes default.
+    -- Newest runtime is the default.
     --------------------------------------------------------------------------
 
     if #runtimes > 0 then
@@ -160,42 +174,107 @@ function M.get()
 end
 
 --------------------------------------------------------------------------------
--- Find runtime
+-- Exact runtime
 --------------------------------------------------------------------------------
 
 ---@param required integer
 ---@return JavaRuntime?
-function M.find(required)
-    local candidates = {}
+function M.exact(required)
+    local runtimes = M.get()
 
-    for _, runtime in ipairs(M.get()) do
-        local major =
-            tonumber(runtime.name:match("JavaSE%-(%d+)"))
-
-        if major and major >= required then
-            table.insert(candidates, {
-                runtime = runtime,
-                version = major,
-            })
+    for _, runtime in ipairs(runtimes) do
+        if runtime_version(runtime) == required then
+            return runtime
         end
     end
 
+    return nil
+end
+
+--------------------------------------------------------------------------------
+-- Compatible runtime
+--------------------------------------------------------------------------------
+
+---@param required integer
+---@return JavaRuntime?
+function M.compatible(required)
+    local runtimes = M.get()
+
+    local best = nil
+    local best_version = nil
+
+    for _, runtime in ipairs(runtimes) do
+        local major = runtime_version(runtime)
+
+        if major and major >= required then
+            if not best_version or major < best_version then
+                best = runtime
+                best_version = major
+            end
+        end
+    end
+
+    return best
+end
+
+--------------------------------------------------------------------------------
+-- JDTLS runtime
+--------------------------------------------------------------------------------
+
+---@return JavaRuntime?, string?
+function M.jdtls()
+    local runtimes = M.get()
+
+    if #runtimes == 0 then
+        return nil, string.format(
+            "JDTLS requires Java >= %d, but no compatible JDK was found.",
+            M.MINIMUM_JDTLS_JAVA
+        )
+    end
+
     --------------------------------------------------------------------------
-    -- Prefer the smallest compatible JDK.
-    --
-    -- Example:
-    --
-    -- required = 21
-    -- available = 21, 25
-    --
-    -- choose 21 rather than 25.
+    -- Prefer the newest installed compatible JDK.
     --------------------------------------------------------------------------
 
-    table.sort(candidates, function(a, b)
-        return a.version < b.version
-    end)
+    local runtime = runtimes[#runtimes]
 
-    return candidates[1] and candidates[1].runtime or nil
+    return runtime, nil
+end
+
+--------------------------------------------------------------------------------
+-- Required project runtime
+--------------------------------------------------------------------------------
+
+---@param required integer
+---@return JavaRuntime?, string?
+function M.require(required)
+    local runtimes = M.get()
+
+    for _, runtime in ipairs(runtimes) do
+        if runtime_version(runtime) == required then
+            return runtime, nil
+        end
+    end
+
+    local installed
+
+    if #runtimes == 0 then
+        installed = "none"
+    else
+        installed = table.concat(
+            vim.tbl_map(function(runtime)
+                return runtime.name
+            end, runtimes),
+            ", "
+        )
+    end
+
+    return nil, string.format(
+        "Java %d is required, but Java %d is not installed. Installed JDKs: %s",
+        required,
+        required,
+        installed
+    )
 end
 
 --------------------------------------------------------------------------------
@@ -210,34 +289,7 @@ function M.default()
 end
 
 --------------------------------------------------------------------------------
--- Required runtime
---------------------------------------------------------------------------------
-
----@param required integer
----@return JavaRuntime?, string?
-function M.require(required)
-    local runtime = M.find(required)
-
-    if runtime then
-        return runtime, nil
-    end
-
-    return nil, string.format(
-        "Java %d is required, but no compatible JDK was found. Installed JDKs: %s",
-        required,
-        #M.get() == 0
-        and "none"
-        or table.concat(
-            vim.tbl_map(function(x)
-                return x.name
-            end, M.get()),
-            ", "
-        )
-    )
-end
-
---------------------------------------------------------------------------------
--- JDTLS runtime validation
+-- PATH validation
 --------------------------------------------------------------------------------
 
 ---@return boolean
@@ -246,9 +298,7 @@ function M.validate_jdtls()
 
     if java == "" then
         vim.notify(
-            "JDTLS requires Java >= "
-            .. M.MINIMUM_JDTLS_JAVA
-            .. ", but `java` was not found in PATH.",
+            "Java was not found in PATH.",
             vim.log.levels.ERROR
         )
 
@@ -265,7 +315,7 @@ function M.validate_jdtls()
 
     if not major then
         vim.notify(
-            "Unable to determine the Java version used to launch JDTLS.",
+            "Unable to determine the Java version used by PATH.",
             vim.log.levels.ERROR
         )
 
@@ -275,10 +325,9 @@ function M.validate_jdtls()
     if major < M.MINIMUM_JDTLS_JAVA then
         vim.notify(
             string.format(
-                "JDTLS requires Java >= %d, but PATH provides Java %d: %s",
+                "JDTLS requires Java >= %d, but PATH provides Java %d.",
                 M.MINIMUM_JDTLS_JAVA,
-                major,
-                java
+                major
             ),
             vim.log.levels.ERROR
         )
