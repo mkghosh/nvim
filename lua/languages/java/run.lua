@@ -57,7 +57,8 @@ end
 -- Run
 --------------------------------------------------------------------------------
 
-function M.run()
+---@param entry? table
+function M.run(entry)
     local root = project.root()
 
     if not root then
@@ -68,13 +69,15 @@ function M.run()
         return
     end
 
-    --------------------------------------------------------------------------
-    -- Resolve main class
-    --------------------------------------------------------------------------
+    local main_class
 
-    local main_class = util.resolve_classname()
+    if entry then
+        main_class = entry.mainClass
+    else
+        main_class = util.resolve_classname()
+    end
 
-    if not main_class then
+    if not main_class or main_class == "" then
         vim.notify(
             "Unable to determine the Java main class.",
             vim.log.levels.ERROR
@@ -82,15 +85,16 @@ function M.run()
         return
     end
 
+    local project_name = entry and entry.projectName or ""
+
     --------------------------------------------------------------------------
     -- Resolve Java executable
     --------------------------------------------------------------------------
 
     util.with_java_executable(
         main_class,
-        "",
+        project_name,
         function(java_exec)
-
             if not java_exec then
                 vim.notify(
                     "Unable to resolve the Java executable.",
@@ -108,15 +112,14 @@ function M.run()
                     command = "vscode.java.resolveClasspath",
                     arguments = {
                         main_class,
-                        "",
+                        project_name,
                     },
                 },
                 function(err, paths)
-
                     if err then
                         vim.notify(
                             "Unable to resolve Java classpath: "
-                                .. (err.message or vim.inspect(err)),
+                            .. (err.message or vim.inspect(err)),
                             vim.log.levels.ERROR
                         )
                         return
@@ -141,20 +144,12 @@ function M.run()
                         class_paths
                     )
 
-                    ----------------------------------------------------------------
-                    -- Build Java command
-                    ----------------------------------------------------------------
-
                     local command = build_command(
                         java_exec,
                         main_class,
                         module_paths,
                         class_paths
                     )
-
-                    ----------------------------------------------------------------
-                    -- Run normally
-                    ----------------------------------------------------------------
 
                     terminal.run({
                         cmd = command,
