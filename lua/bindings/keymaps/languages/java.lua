@@ -8,7 +8,7 @@ local test = require("lsp.servers.jdtls.test")
 
 local spring = require("languages.java.spring.project")
 
-local java_dap = require("languages.java.dap")
+local java_run = require("languages.java.run")
 
 local mappings = {
 
@@ -154,12 +154,19 @@ local mappings = {
 
     map(
         "n",
+        "<leader>jrr",
+        java_run.run,
+        "Run Java Application"
+    ),
+
+    map(
+        "n",
         "<leader>jrd",
         function()
             local dap = require("dap")
 
             dap.run(
-                dap.configurations.java[2]
+                dap.configurations.java[1]
             )
         end,
         "Debug Java Application"
