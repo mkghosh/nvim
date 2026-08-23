@@ -8,6 +8,8 @@ local test = require("lsp.servers.jdtls.test")
 
 local spring = require("languages.java.spring.project")
 
+local java_dap = require("languages.java.dap")
+
 local mappings = {
 
     ----------------------------------------------------------------------------
@@ -144,6 +146,23 @@ local mappings = {
             refactor.extract_method(true)
         end,
         "Extract Method"
+    ),
+
+    ----------------------------------------------------------------------------
+    -- Run / Debug
+    ----------------------------------------------------------------------------
+
+    map(
+        "n",
+        "<leader>jrd",
+        function()
+            local dap = require("dap")
+
+            dap.run(
+                dap.configurations.java[2]
+            )
+        end,
+        "Debug Java Application"
     ),
 
     ----------------------------------------------------------------------------

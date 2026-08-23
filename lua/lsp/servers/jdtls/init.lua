@@ -1,31 +1,24 @@
 ---@diagnostic disable: undefined-field
 
-local jdtls =
-    require("jdtls")
+local jdtls = require("jdtls")
 
-local bundles =
-    require("lsp.servers.jdtls.bundles")
+local bundles = require("lsp.servers.jdtls.bundles")
 
-local command_line =
-    require("lsp.servers.jdtls.command_line")
+local command_line = require("lsp.servers.jdtls.command_line")
 
-local dap =
-    require("lsp.servers.jdtls.dap")
+local dap = require("lsp.servers.jdtls.dap")
 
-local settings =
-    require("lsp.servers.jdtls.settings")
+local settings = require("lsp.servers.jdtls.settings")
 
-local runtimes =
-    require("lsp.servers.jdtls.runtimes")
+local runtimes = require("lsp.servers.jdtls.runtimes")
 
-local metadata =
-    require("languages.java.metadata")
+local metadata = require("languages.java.metadata")
 
-local project =
-    require("languages.java.project")
+local project = require("languages.java.project")
 
-local spring =
-    require("languages.java.spring")
+local spring = require("languages.java.spring")
+
+local java_dap = require("languages.java.dap")
 
 local M = {}
 
@@ -87,7 +80,7 @@ function M.setup()
     --------------------------------------------------------------------------
 
     dap.setup()
-
+    java_dap.setup()
     spring.setup()
 
     --------------------------------------------------------------------------

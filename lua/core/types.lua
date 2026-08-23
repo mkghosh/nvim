@@ -176,6 +176,7 @@
 ---@field uv? string
 ---@field system? string
 ---@field executable? string
+---@field env? table<string, string>
 
 ---@class TaskCommand
 ---@field executable string

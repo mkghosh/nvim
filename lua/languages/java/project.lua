@@ -709,6 +709,38 @@ function M.java_runtime()
 end
 
 --------------------------------------------------------------------------------
+-- Project Java environment
+--------------------------------------------------------------------------------
+
+---@return table<string, string>?, string?
+function M.java_environment()
+    local runtime, error_message =
+        M.java_runtime()
+
+    if not runtime then
+        if error_message then
+            return nil, error_message
+        end
+
+        return nil, nil
+    end
+
+    local bin =
+        vim.fs.joinpath(
+            runtime.path,
+            "bin"
+        )
+
+    local current_path =
+        vim.env.PATH or ""
+
+    return {
+        JAVA_HOME = runtime.path,
+        PATH = bin .. ":" .. current_path,
+    }, nil
+end
+
+--------------------------------------------------------------------------------
 -- Tasks
 --------------------------------------------------------------------------------
 
@@ -729,10 +761,23 @@ function M.task(task)
         return nil
     end
 
+    local environment, environment_error =
+        M.java_environment()
+
+    if environment_error then
+        vim.notify(
+            environment_error,
+            vim.log.levels.ERROR
+        )
+
+        return nil
+    end
+
     return {
         title = task.title,
         executable = toolchain.executable,
         system = toolchain.system,
+        env = environment,
 
         [toolchain.system] = arguments,
     }

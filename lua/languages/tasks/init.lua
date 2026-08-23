@@ -73,6 +73,8 @@ function M.run(root, task, opts)
 
         title = task.title,
 
+        env = task.env,
+
         command = {
 
             executable = executable,
