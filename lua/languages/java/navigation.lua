@@ -2,12 +2,16 @@ local M = {}
 
 local search = require("core.search")
 
+local function telescope()
+    return require("telescope.builtin")
+end
+
 --------------------------------------------------------------------------------
 -- Definition / Declaration
 --------------------------------------------------------------------------------
 
 function M.definition()
-    vim.lsp.buf.definition()
+    telescope().lsp_definitions()
 end
 
 function M.declaration()
@@ -15,11 +19,11 @@ function M.declaration()
 end
 
 function M.implementation()
-    vim.lsp.buf.implementation()
+    telescope().lsp_implementations()
 end
 
 function M.type_definition()
-    vim.lsp.buf.type_definition()
+    telescope().lsp_type_definitions()
 end
 
 --------------------------------------------------------------------------------
@@ -27,7 +31,7 @@ end
 --------------------------------------------------------------------------------
 
 function M.references()
-    vim.lsp.buf.references()
+    telescope().lsp_references()
 end
 
 --------------------------------------------------------------------------------
@@ -59,7 +63,7 @@ end
 --------------------------------------------------------------------------------
 
 function M.type_hierarchy()
-    vim.lsp.buf.typehierarchy()
+    vim.lsp.buf.typehierarchy("supertypes")
 end
 
 return M

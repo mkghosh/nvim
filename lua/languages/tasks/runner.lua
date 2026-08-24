@@ -9,7 +9,7 @@ local M = {}
 ---@param root? string
 ---@param task TaskDefinition
 ---@param language string
----@param opts? TerminalRunOptions
+---@param opts? TerminalTaskOptions
 function M.run(root, task, language, opts)
     if not root then
         vim.notify(

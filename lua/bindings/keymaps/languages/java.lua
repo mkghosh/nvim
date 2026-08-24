@@ -94,6 +94,14 @@ local mappings = {
         refactor.organize_imports,
         "Organize Imports"
     ),
+
+    map(
+        "n",
+        "<leader>jic",
+        refactor.organize_imports_choose,
+        "Choose Imports"
+    ),
+
     map(
         "n",
         "<leader>jmf",
@@ -120,13 +128,6 @@ local mappings = {
         "<leader>jrc",
         refactor.extract_constant,
         "Extract Constant"
-    ),
-
-    map(
-        "n",
-        "<leader>jrm",
-        refactor.extract_method,
-        "Extract Method"
     ),
 
     map(
@@ -169,7 +170,7 @@ local mappings = {
 
     map(
         "n",
-        "<leader>jrm",
+        "<leader>jmr",
         java_main.run,
         "Select Main Class and Run"
     ),
@@ -333,6 +334,49 @@ local mappings = {
         "<leader>jcr",
         codelens.refresh,
         "Refresh CodeLens"
+    ),
+
+    ----------------------------------------------------------------------------
+    -- Java Source Generation
+    ----------------------------------------------------------------------------
+
+    ----------------------------------------------------------------------------
+    -- Java Source Generation
+    ----------------------------------------------------------------------------
+
+    map(
+        "n",
+        "<leader>jgc",
+        code_action.generate_constructor,
+        "Generate Constructor"
+    ),
+
+    map(
+        "n",
+        "<leader>jgd",
+        code_action.generate_delegate_methods,
+        "Generate Delegate Methods"
+    ),
+
+    map(
+        "n",
+        "<leader>jgt",
+        code_action.generate_to_string,
+        "Generate toString"
+    ),
+
+    map(
+        "n",
+        "<leader>jge",
+        code_action.generate_equals_hashcode,
+        "Generate equals/hashCode"
+    ),
+
+    map(
+        "n",
+        "<leader>jgo",
+        code_action.override_methods,
+        "Override Methods"
     ),
 }
 

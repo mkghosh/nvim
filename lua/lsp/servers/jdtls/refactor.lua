@@ -6,11 +6,57 @@ local api = vim.api
 local jdtls = require("jdtls")
 
 ----------------------------------------------------------------------
+-- JDTLS custom protocol requests
+--
+-- java/getMoveDestinations and java/move are JDTLS-specific methods.
+-- They are valid JDTLS protocol extensions, but Neovim's LSP type
+-- definitions only know the standard LSP method union. Keep the
+-- type suppression in one place instead of scattering it throughout
+-- the refactoring implementation.
+----------------------------------------------------------------------
+
+---@param client vim.lsp.Client
+---@param method string
+---@param params table
+---@param callback fun(err: lsp.ResponseError?, result: any, ctx: lsp.HandlerContext)
+---@param bufnr? integer
+local function jdtls_request(
+    client,
+    method,
+    params,
+    callback,
+    bufnr
+)
+    ---@diagnostic disable-next-line: param-type-mismatch
+    client:request(
+        method,
+        params,
+        callback,
+        bufnr
+    )
+end
+
+----------------------------------------------------------------------
 -- Basic JDTLS refactoring
 ----------------------------------------------------------------------
 
 function M.organize_imports()
     jdtls.organize_imports()
+end
+
+function M.organize_imports_choose()
+    local command =
+        jdtls.commands["java.action.organizeImports.chooseImports"]
+
+    if not command then
+        vim.notify(
+            "JDTLS does not support interactive import selection.",
+            vim.log.levels.WARN
+        )
+        return
+    end
+
+    command()
 end
 
 function M.extract_method(visual)
@@ -39,24 +85,6 @@ local function get_jdtls_client(bufnr)
 
     return clients[1]
 end
-
-
-local function get_current_file_uri(bufnr)
-    bufnr = bufnr or api.nvim_get_current_buf()
-
-    if not api.nvim_buf_is_valid(bufnr) then
-        return nil
-    end
-
-    local name = api.nvim_buf_get_name(bufnr)
-
-    if name == "" then
-        return nil
-    end
-
-    return vim.uri_from_fname(name)
-end
-
 
 local function apply_workspace_edit(edit)
     if not edit then
@@ -148,8 +176,8 @@ local function move_file_command(
         params = vim.NIL,
     }
 
-    ---@diagnostic disable-next-line: param-type-mismatch
-    client:request(
+    jdtls_request(
+        client,
         "java/getMoveDestinations",
         params,
         function(err, result, ctx)
@@ -265,8 +293,8 @@ local function move_file_command(
                         updateReferences = true,
                     }
 
-                    ---@diagnostic disable-next-line: param-type-mismatch
-                    client:request(
+                    jdtls_request(
+                        client,
                         "java/move",
                         move_params,
                         function(
@@ -377,6 +405,7 @@ function M.move_file()
         return
     end
 
+    ---@type lsp.CodeActionParams
     local params =
         vim.lsp.util.make_range_params(
             api.nvim_get_current_win(),
@@ -443,38 +472,6 @@ function M.move_file()
         bufnr
     )
 end
-
-----------------------------------------------------------------------
--- Find Java files directly inside a package directory
-----------------------------------------------------------------------
-
-local function find_java_files(package_dir)
-    local files = {}
-
-    local ok, iterator =
-        pcall(vim.fs.dir, package_dir)
-
-    if not ok or not iterator then
-        return files
-    end
-
-    for name, file_type in iterator do
-        if file_type == "file"
-            and vim.endswith(name, ".java")
-        then
-            table.insert(
-                files,
-                vim.fs.joinpath(
-                    package_dir,
-                    name
-                )
-            )
-        end
-    end
-
-    return files
-end
-
 
 ----------------------------------------------------------------------
 -- Move / rename package
@@ -716,7 +713,7 @@ function M.move_package()
         client,
         bufnr,
         function(
-            _move_command,
+            _,
             code_action_params
         )
             if not code_action_params then
@@ -739,8 +736,8 @@ function M.move_package()
                 params = vim.NIL,
             }
 
-            ---@diagnostic disable-next-line: param-type-mismatch
-            client:request(
+            jdtls_request(
+                client,
                 "java/getMoveDestinations",
                 destination_request,
                 function(
@@ -1126,8 +1123,8 @@ function M.move_package()
                                             vim.log.levels.INFO
                                         )
 
-                                        ---@diagnostic disable-next-line: param-type-mismatch
-                                        client:request(
+                                        jdtls_request(
+                                            client,
                                             "java/move",
                                             move_params,
                                             function(
@@ -1237,8 +1234,8 @@ function M.move_package()
                                     true,
                             }
 
-                            ---@diagnostic disable-next-line: param-type-mismatch
-                            client:request(
+                            jdtls_request(
+                                client,
                                 "java/move",
                                 move_params,
                                 function(

@@ -1,21 +1,28 @@
 local M = {}
 
-function M.refresh()
-    vim.lsp.codelens.refresh()
-end
+local enabled = true
+
+--------------------------------------------------------------------------------
+-- Enable / Disable
+--------------------------------------------------------------------------------
 
 function M.enable()
+    enabled = true
     vim.lsp.codelens.enable(true)
 end
 
 function M.disable()
+    enabled = false
     vim.lsp.codelens.enable(false)
 end
 
-function M.toggle()
-    local enabled = vim.lsp.codelens.is_enabled()
+--------------------------------------------------------------------------------
+-- Toggle
+--------------------------------------------------------------------------------
 
-    vim.lsp.codelens.enable(not enabled)
+function M.toggle()
+    enabled = not enabled
+    vim.lsp.codelens.enable(enabled)
 end
 
 return M
