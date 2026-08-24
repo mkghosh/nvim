@@ -10,6 +10,14 @@ local spring = require("languages.java.spring.project")
 
 local java_run = require("languages.java.run")
 
+local java_main = require("languages.java.main")
+
+local navigation = require("languages.java.navigation")
+
+local code_action = require("languages.java.code_action")
+
+local codelens = require("languages.java.codelens")
+
 local mappings = {
 
     ----------------------------------------------------------------------------
@@ -161,7 +169,14 @@ local mappings = {
 
     map(
         "n",
-        "<leader>jrd",
+        "<leader>jrm",
+        java_main.run,
+        "Select Main Class and Run"
+    ),
+
+    map(
+        "n",
+        "<leader>jdr",
         function()
             local dap = require("dap")
 
@@ -172,6 +187,12 @@ local mappings = {
         "Debug Java Application"
     ),
 
+    map(
+        "n",
+        "<leader>jdm",
+        java_main.debug,
+        "Select Main Class and Debug"
+    ),
     ----------------------------------------------------------------------------
     -- Tests
     ----------------------------------------------------------------------------
@@ -197,6 +218,122 @@ local mappings = {
         "Pick Test"
     ),
 
+    ----------------------------------------------------------------------------
+    -- Navigation
+    ----------------------------------------------------------------------------
+
+    map(
+        "n",
+        "<leader>jnd",
+        navigation.definition,
+        "Go to Definition"
+    ),
+
+    map(
+        "n",
+        "<leader>jnn",
+        navigation.declaration,
+        "Go to Declaration"
+    ),
+
+    map(
+        "n",
+        "<leader>jni",
+        navigation.implementation,
+        "Go to Implementation"
+    ),
+
+    map(
+        "n",
+        "<leader>jnt",
+        navigation.type_definition,
+        "Go to Type Definition"
+    ),
+
+    map(
+        "n",
+        "<leader>jnr",
+        navigation.references,
+        "Find References"
+    ),
+
+    map(
+        "n",
+        "<leader>jns",
+        navigation.document_symbols,
+        "Document Symbols"
+    ),
+
+    map(
+        "n",
+        "<leader>jnw",
+        navigation.workspace_symbols,
+        "Workspace Symbols"
+    ),
+
+    map(
+        "n",
+        "<leader>jnc",
+        navigation.incoming_calls,
+        "Incoming Calls"
+    ),
+
+    map(
+        "n",
+        "<leader>jno",
+        navigation.outgoing_calls,
+        "Outgoing Calls"
+    ),
+
+    map(
+        "n",
+        "<leader>jnh",
+        navigation.type_hierarchy,
+        "Type Hierarchy"
+    ),
+
+    ----------------------------------------------------------------------------
+    -- Code Actions
+    ----------------------------------------------------------------------------
+
+    map(
+        "n",
+        "<leader>jca",
+        code_action.actions,
+        "Java Code Actions"
+    ),
+
+    map(
+        "n",
+        "<leader>jcs",
+        code_action.source_actions,
+        "Java Source Actions"
+    ),
+
+    map(
+        "n",
+        "<leader>jcq",
+        code_action.quickfix,
+        "Java Quick Fix"
+    ),
+
+    ----------------------------------------------------------------------------
+    -- CodeLens
+    ----------------------------------------------------------------------------
+
+    map(
+        "n",
+        "<leader>jcl",
+        codelens.toggle,
+        "Toggle CodeLens"
+    ),
+
+    map(
+        "n",
+        "<leader>jcr",
+        codelens.refresh,
+        "Refresh CodeLens"
+    ),
 }
 
 --------------------------------------------------------------------------------

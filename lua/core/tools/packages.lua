@@ -11,28 +11,20 @@ M.categories = {
     --------------------------------------------------------------------------
 
     lsp = {
-
         -- Lua
         "lua_ls",
-
         -- Shell
         "bashls",
-
         -- Web
         "jsonls",
         "yamlls",
-
         -- Go
         "gopls",
-
         -- Docker
         "dockerls",
         "docker_compose_language_service",
-
         --Python
         "basedpyright"
-        -- Java
-        -- jdtls is managed separately because of your custom launcher
     },
 
     --------------------------------------------------------------------------
@@ -40,20 +32,25 @@ M.categories = {
     --------------------------------------------------------------------------
 
     formatters = {
-
         "stylua",
-
         "shfmt",
-
         "prettier",
-
         "black",
         "isort",
-
         "goimports",
         "gofumpt",
-
         "ruff",
+    },
+
+    --------------------------------------------------------------------------
+    -- Java
+    --------------------------------------------------------------------------
+
+    java = {
+        "jdtls",
+        "java-debug-adapter",
+        "google-java-format",
+        "java-test",
     },
 
     --------------------------------------------------------------------------
@@ -61,17 +58,11 @@ M.categories = {
     --------------------------------------------------------------------------
 
     linters = {
-
         "luacheck",
-
         "shellcheck",
-
         "yamllint",
-
         "markdownlint-cli2",
-
         "hadolint",
-
         "golangci-lint",
     },
 
@@ -80,11 +71,8 @@ M.categories = {
     --------------------------------------------------------------------------
 
     dap = {
-
         "delve",
-
         "debugpy",
-        -- "java-debug-adapter",
     },
 
     --------------------------------------------------------------------------
