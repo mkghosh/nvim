@@ -1,13 +1,16 @@
 local path = require("utils.path")
 
+local versions = require("lsp.servers.jdtls.versions")
+
 local M = {}
 
 local mason = path.mason("packages")
 
-local java_test_server =
-    vim.fn.expand(
-        "~/.local/share/nvim/java-test-0.46.0/extension/server"
-    )
+local java_test_server = vim.fn.expand(
+    "~/.local/share/nvim/java-test-"
+    .. versions.java_test
+    .. "/extension/server"
+)
 
 local function glob(pattern)
     return vim.fn.glob(pattern, false, true)

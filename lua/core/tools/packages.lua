@@ -50,7 +50,6 @@ M.categories = {
         "jdtls",
         "java-debug-adapter",
         "google-java-format",
-        "java-test",
     },
 
     --------------------------------------------------------------------------
