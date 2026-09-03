@@ -40,6 +40,11 @@ echo "==> Installing Java Test..."
 "$NVIM_CONFIG/scripts/install-java-test.sh"
 
 echo
+echo "==> Installing LazyGit..."
+
+"$NVIM_CONFIG/scripts/install-lazygit.sh"
+
+echo
 echo "======================================"
 echo " Bootstrap completed successfully"
 echo "======================================"
