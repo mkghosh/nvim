@@ -128,9 +128,12 @@ end
 ----------------------------------------------------------------------
 -- General
 ----------------------------------------------------------------------
-
 function M.exists()
-    return metadata().version ~= nil
+    local data = metadata()
+
+    return data.root ~= nil
+        and data.build ~= nil
+        and data.version ~= nil
 end
 
 function M.root()
